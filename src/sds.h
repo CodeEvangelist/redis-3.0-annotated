@@ -46,6 +46,10 @@ typedef char *sds;
 
 /*
  * 保存字符串对象的结构
+ *
+ * 分配空间的两种策略
+ * 1、如果长度小于1mb,那么会分配和len长度一样的空闲空间
+ * 2、如果长度大于1mb，直接多分配1mb+1字节，这个1字节用来存储'\0'
  */
 struct sdshdr {
     
@@ -65,6 +69,9 @@ struct sdshdr {
  * T = O(1)
  */
 static inline size_t sdslen(const sds s) {
+    //因为s实际上是buf的首地址，通过创建新的buf返回的引用可以知道
+    //所以整体结构就是 ｜ int  ｜  int  ｜  buf  ｜
+    //那么整个结构体的内存首地址就是  = {buf的首地址 - （sizeof（struct sdshdr））} = s-(sizeof(struct sdshdr))
     struct sdshdr *sh = (void*)(s-(sizeof(struct sdshdr)));
     return sh->len;
 }
